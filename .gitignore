@@ -5,3 +5,12 @@ splashpixel-arduino.v11.suo
 splashpixel-arduino.vcxproj
 splashpixel-arduino.vcxproj.filters
 Visual Micro/.splashpixel-arduino.vsarduino.h
+Visual Micro/.splashpixel.vsarduino.h
+Visual Micro/Compile.vmps.xml
+Visual Micro/Configuration.Debug.vmps.xml
+Visual Micro/Upload.vmps.xml
+splashpixel.sdf
+splashpixel.sln
+splashpixel.v11.suo
+splashpixel.vcxproj
+splashpixel.vcxproj.filters
