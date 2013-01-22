@@ -3,7 +3,7 @@
 
 Subpixel::Subpixel()
 {
-	brightnessScaler = 20;
+	brightnessScaler = 1;
 }
 
 void Subpixel::setChannel(const int &c)
@@ -25,8 +25,12 @@ void Subpixel::set(const double &newTarget, const int &steps)
 
 void Subpixel::step(int times)
 {
-  for (int i = 0; i < times; i++) {
-	val += stepDistance;
+  if (remainingSteps > 0) {
+	  int steps = min(times, remainingSteps);
+	  for (int i = 0; i < steps; i++) {
+		val += stepDistance;
+	  }
+	  remainingSteps--;
   }
 
   if (val > pwm_range_max)

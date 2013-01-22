@@ -16,6 +16,8 @@ const int protocolHeaderLength = 2;
 const int protocolBodyLength = 12;
 const int protocolChecksumLength = 1;
 
+const long activityTimeout = 120000;
+
 byte receivedMessage[protocolBodyLength];
 
 long steppedUntil = millis();
@@ -27,8 +29,9 @@ void setup() {
   Serial.begin(115200);
 }
 
+
 void loop() {
-	if (lastMessageHeader() > 120000)
+	if (lastMessageHeader() > activityTimeout)
 	{
 		for (int i = 0; i < pixelCount; i++) {
 			pixels[i].set(0, 0, 0);
