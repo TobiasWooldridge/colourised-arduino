@@ -31,13 +31,6 @@ void setup() {
 
 
 void loop() {
-	if (lastMessageHeader() > activityTimeout)
-	{
-		for (int i = 0; i < pixelCount; i++) {
-			pixels[i].set(0, 0, 0);
-		}
-	}
-
 	while (Serial.available() >= protocolHeaderLength) {
 		messageStarted = millis();
 
@@ -53,6 +46,11 @@ void loop() {
 			setColors();
 		}
 	}
+	
+	if (lastMessageHeader() > activityTimeout)
+	{
+		sleep();
+	}
 
 	advanceAnimation();
 }
@@ -64,6 +62,12 @@ inline long lastMessageHeader() {
 
 inline boolean messageTimedOut() {
   return lastMessageHeader() > 20;
+}
+
+void sleep() {
+	for (int i = 0; i < pixelCount; i++) {
+		pixels[i].set(0, 0, 0);
+	}
 }
 
 void advanceAnimation() {
