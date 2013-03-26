@@ -1,22 +1,29 @@
 // Copyright 2013 Tobias Wooldridge
 // Protocol originally based upon https://github.com/iKenndac/Arduino-Dioder-Playground
-#include "Subpixel.h"
-#include "Pixel.h"
-#include "Subpixel.h"
-#include "Pixel.h"
+
+#include "TLC5940.h"
+#define SP_OUTPUT_STOCK 0
+#define SP_OUTPUT_TLC 1
+
+#define SP_OUTPUT_MODE OUTPUT_STOCK
+
+const float brightness = 0.5;
+const int crossfade_steps = 240;
 
 // Configure LEDs
-Pixel pixels[] = { Pixel(3, 2, 4), Pixel(6, 5, 7), Pixel(9, 8, 10), Pixel(12, 11, 13)};
-int pixelCount = 4;
+const int procolPreamble = 0xBA;
 
-const int protocolHeaderLeadingByte = 0xBA;
-const int protocolHeaderSetColoursByte = 0xBE;
+const int protocolInstructionVersion = 0x00;
+const int protocolInstructionSetColours = 0xBE;
+const int protocolInstructionPowerDown = 0xBF;
 
 const int protocolHeaderLength = 2;
 const int protocolBodyLength = 12;
 const int protocolChecksumLength = 1;
 
-const long activityTimeout = 120000;
+const long idleTimeout = 120000;
+
+int channelCount = 16;
 
 byte receivedMessage[protocolBodyLength];
 
@@ -29,89 +36,62 @@ void setup() {
   Serial.begin(115200);
 }
 
+int SerialReadInt16() {
+	(Serial.read() << 8) + Serial.read();
+}
+
 
 void loop() {
 	while (Serial.available() >= protocolHeaderLength) {
 		messageStarted = millis();
 
-		byte leadingByte = Serial.read();
-		if (leadingByte != protocolHeaderLeadingByte)
+		// Sync
+		if (Serial.read() != procolPreamble)
 			continue;
 
-		byte instructionByte = Serial.peek();
-		if (instructionByte == protocolHeaderSetColoursByte) {
-			// Header match; remove second byte
-			Serial.read();
-        
-			setColors();
+		byte instruction = Serial.read();
+
+		int messageLength = SerialReadInt16();
+
+		switch (instruction) {
+			case protocolInstructionSetColours: readColours(messageLength); break;
+			case protocolInstructionVersion: sendVersion(); break;
+			case protocolInstructionPowerDown: powerDown(); break;
+			
+			default: return;
 		}
 	}
 	
-	if (lastMessageHeader() > activityTimeout)
+	if (lastMessageHeader() > idleTimeout)
 	{
-		sleep();
+		powerDown();
 	}
-
-	advanceAnimation();
 }
 
 
-inline long lastMessageHeader() {
+long lastMessageHeader() {
 	return millis() - messageStarted;
 }
 
-inline boolean messageTimedOut() {
-  return lastMessageHeader() > 20;
-}
+void readColours(int messageLength) {
+	if (messageLength % 4 != 0) {
+		return; // TODO add some clever error handling
+	}
+	int specifiedChannels = messageLength/4;
 
-void sleep() {
-	for (int i = 0; i < pixelCount; i++) {
-		pixels[i].set(0, 0, 0);
+	for (int i = 0; i < specifiedChannels; i++) {
+		Tlc.set(SerialReadInt16(), SerialReadInt16());
 	}
 }
 
-void advanceAnimation() {
-	int steps = (millis() - steppedUntil)/5;
-	if (steps > 0)
-	{
-		for (int i = 0; i < pixelCount; i++) {
-			pixels[i].step(steps);
-		}
-
-		steppedUntil += 5 * steps;
+void powerDown() {
+	for (int i = 0; i < channelCount; i++) {
+		Tlc.set(i, 0);
 	}
 }
 
-void setColors() {
-	while (Serial.available() < (protocolBodyLength + protocolChecksumLength)) {
-		if (messageTimedOut()) {
-			return;
-		}
-	}
-  
-    byte calculatedChecksum = 0;
-    
-    for (int i = 0; i < protocolBodyLength; i++) {
-		receivedMessage[i] = Serial.read();
-		calculatedChecksum ^= receivedMessage[i];
-    }
-    
-    byte receivedChecksum = Serial.read();
-
-    if (receivedChecksum == calculatedChecksum) {
-	  for (int i = 0; i < pixelCount; i++) {
-		  int offset = i * 3;
-		  uint16_t red, green, blue;
-      
-		  red = (double)receivedMessage[offset + 0];
-		  green = (double)receivedMessage[offset + 1];
-		  blue = (double)receivedMessage[offset + 2];
-		  
-		  pixels[i].set(red, green, blue);
-	  }
-      
-      Serial.println("Success");
-    } else { 
-      Serial.println("Fail");
-    }
+void sendVersion() {
+	Serial.write(0x00); // Model
+	Serial.write(0x00); // Major version
+	Serial.write(0x01); // Minor version
 }
