@@ -2,13 +2,6 @@
 // Protocol originally based upon https://github.com/iKenndac/Arduino-Dioder-Playground
 
 #include "TLC5940.h"
-#define SP_OUTPUT_STOCK 0
-#define SP_OUTPUT_TLC 1
-
-#define SP_OUTPUT_MODE OUTPUT_STOCK
-
-const float brightness = 0.5;
-const int crossfade_steps = 240;
 
 // Configure LEDs
 const int procolPreamble = 0xBA;
