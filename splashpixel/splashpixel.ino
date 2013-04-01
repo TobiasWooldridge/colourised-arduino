@@ -54,7 +54,7 @@ void loop() {
       continue;
     }
     
-    Serial.write("Matched preamble\n");
+//    Serial.write("Matched preamble\n");
 
     byte instruction = Serial.read();
     unsigned int messageLength = SerialReadUInt16();
@@ -66,7 +66,7 @@ void loop() {
       default: ;
     }
     
-    Serial.write("Finished instruction\n");
+//    Serial.write("Finished instruction\n");
   }
   
   if (lastMessageHeader() > idleTimeout)
@@ -81,13 +81,16 @@ long lastMessageHeader() {
 }
 
 void readColours(unsigned int messageLength) {
-  Serial.write("readColours\n");
+//  Serial.write("readColours\n");
   
-  unsigned int specifiedChannels = messageLength/4;
+  unsigned int specifiedChannels = messageLength/6;
   
   for (unsigned int i = 0; i < specifiedChannels; i++) {
     unsigned int channel =   SerialReadUInt16();
     unsigned int value =   SerialReadUInt16();
+    
+    
+    
     set(channel, value);
   }
 
