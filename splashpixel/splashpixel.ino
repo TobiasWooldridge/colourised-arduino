@@ -6,9 +6,9 @@
 // Configure LEDs
 const int procolPreamble = 0xBA;
 
-const int protocolInstructionVersion = 0x00;
-const int protocolInstructionSetColours = 0xBE;
-const int protocolInstructionPowerDown = 0xBF;
+const int instructionVersion = 0x00;
+const int instructionSetColours = 0xBE;
+const int instructionPowerDown = 0xBF;
 
 const int protocolHeaderLength = 4;
 const int protocolBodyLength = 12;
@@ -60,9 +60,9 @@ void loop() {
     unsigned int messageLength = SerialReadUInt16();
 
     switch (instruction) {
-      case protocolInstructionSetColours: readColours(messageLength); break;
-//      case protocolInstructionVersion: sendVersion(); break;
-//      case protocolInstructionPowerDown: powerDown(); break;
+      case instructionSetColours: readColours(messageLength); break;
+      case instructionVersion: sendVersion(); break;
+      case instructionPowerDown: powerDown(); break;
       default: ;
     }
     
@@ -83,13 +83,11 @@ long lastMessageHeader() {
 void readColours(unsigned int messageLength) {
 //  Serial.write("readColours\n");
   
-  unsigned int specifiedChannels = messageLength/6;
+  unsigned int specifiedChannels = messageLength/4;
   
   for (unsigned int i = 0; i < specifiedChannels; i++) {
-    unsigned int channel =   SerialReadUInt16();
-    unsigned int value =   SerialReadUInt16();
-    
-    
+    unsigned int channel = SerialReadUInt16();
+    unsigned int value = SerialReadUInt16();
     
     set(channel, value);
   }
