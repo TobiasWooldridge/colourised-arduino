@@ -79,13 +79,25 @@ long lastMessageHeader() {
   return millis() - messageStarted;
 }
 
+// todo: remove hard-coded 3 in following function
 void readColours(unsigned int messageLength) {
-  unsigned int specifiedChannels = messageLength/4;
+  unsigned int specifiedChannels = messageLength/3;
+  Serial.print("Specified channels: ");
+  Serial.print(specifiedChannels);
+  Serial.print("\n");
   
   for (unsigned int i = 0; i < specifiedChannels; i++) {
-    unsigned int channel = SerialReadUInt16();
-    unsigned int value = SerialReadUInt16();
+    while (Serial.available() < 3) {
+    }    
     
+    // Note an int is used to hold just a byte below. This means I won't have to cast each variable below to bit-shift it   
+    // todo: change this to an array
+    byte a = Serial.read();
+    byte b = Serial.read(); // shared byte
+    byte c = Serial.read();
+    
+    unsigned int channel = (((int)a) << 8) + ((b & 0xF0) >> 4);
+    unsigned int value = (((int)(b & 0x0F)) << 8) + c;
     set(channel, value);
   }
 
