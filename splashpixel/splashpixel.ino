@@ -8,7 +8,7 @@ const int procolPreamble = 0xBA;
 
 const int instructionVersion = 0x00;
 const int instructionSetColours = 0xBE;
-const int instructionPowerDown = 0xBF;
+const int instructionPowerDown = 0xFF;
 
 const int protocolHeaderLength = 4;
 const int protocolBodyLength = 12;
@@ -54,8 +54,7 @@ void loop() {
       continue;
     }
     
-//    Serial.write("Matched preamble\n");
-
+    // Serial.write("Matched preamble\n");
     byte instruction = Serial.read();
     unsigned int messageLength = SerialReadUInt16();
 
@@ -66,7 +65,7 @@ void loop() {
       default: ;
     }
     
-//    Serial.write("Finished instruction\n");
+    // Serial.write("Finished instruction\n");
   }
   
   if (lastMessageHeader() > idleTimeout)
@@ -81,8 +80,6 @@ long lastMessageHeader() {
 }
 
 void readColours(unsigned int messageLength) {
-//  Serial.write("readColours\n");
-  
   unsigned int specifiedChannels = messageLength/4;
   
   for (unsigned int i = 0; i < specifiedChannels; i++) {
